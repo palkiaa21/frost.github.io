@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Gerador QR Code Pro</title>
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #050212;
+            background-image: radial-gradient(circle at 50% 0%, #2a1b5d 0%, #050212 70%);
+            color: #f3f4f6;
+            min-height: 100vh;
+        }
+        /* Estilos Glassmorphic personalizados para o GitHub Pages */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .glass-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #00D4FF;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.25);
+            outline: none;
+        }
+        .glass-button-primary {
+            background: linear-gradient(135deg, #8A2BE2 0%, #00D4FF 100%);
+            border: none;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-button-primary:hover {
+            background: linear-gradient(135deg, #993bf2 0%, #1ae0ff 100%);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
+            transform: translateY(-1px);
+        }
+        .glass-button-primary:active {
+            transform: translateY(1px);
+        }
+        /* Alinhamento responsivo do QR */
+        #qrcode img, #qrcode canvas {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4 md:p-8 relative overflow-x-hidden min-h-screen">
+    <!-- Efeitos de iluminação de fundo (Glows) -->
+    <div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-purple-900/15 blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-blue-900/15 blur-[120px] pointer-events-none"></div>
+
+    <div class="w-full max-w-4xl z-10 flex flex-col gap-6">
+        <!-- Cabeçalho -->
+        <header class="flex flex-col md:flex-row justify-between items-center gap-4 border-b border-white/5 pb-5 mb-2">
+            <div class="text-center md:text-left">
+                <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-[#00D4FF] bg-clip-text text-transparent">
+                    ⚡ Gerador QR Code Pro
+                </h1>
+                <p class="text-gray-400 text-sm md:text-base mt-2">
+                    Converta links e textos em QR Codes instantaneamente com controle total
+                </p>
+            </div>
+            <div class="flex items-center gap-4 shrink-0">
+                <span class="text-xs font-mono text-gray-500 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">v2.4.0</span>
+                <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.1);display:grid;place-items:center;border:1px solid rgba(255,255,255,0.1);">👤</div>
+            </div>
+        </header>
+
+        <!-- Layout de Bento Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <!-- Coluna Esquerda: Controles -->
+            <div class="md:col-span-7 flex flex-col gap-5">
+                <div class="glass-panel rounded-2xl p-6 flex flex-col gap-5 shadow-2xl">
+                    <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-purple-400"></i> Configurações
+                    </h2>
+
+                    <!-- Input de Texto/URL -->
+                    <div class="flex flex-col gap-2">
+                        <label for="qr-text" class="text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-link text-purple-400"></i> Texto ou URL do QR Code
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                id="qr-text" 
+                                placeholder="Digite o link ou texto aqui..."
+                                class="w-full glass-input text-white rounded-xl px-4 py-3.5 pr-10 text-sm"
+                            >
+                            <i class="fa-solid fa-font absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                        </div>
+                    </div>
+
+                    <!-- Linha de Cores e Tamanho -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Seleção de Cores -->
+                        <div class="flex flex-col gap-3">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-palette text-purple-400"></i> Personalização de Cores
+                            </label>
+                            
+                            <div class="grid grid-cols-2 gap-2">
+                                <!-- Cor do QR -->
+                                <div class="glass-card rounded-xl p-2.5 flex flex-col gap-1.5 items-center">
+                                    <span class="text-[10px] font-medium text-gray-400">Cor QR Code</span>
+                                    <div class="flex items-center gap-1.5 w-full">
+                                        <input type="color" id="qr-color" value="#000000" class="w-7 h-7 bg-transparent border-0 cursor-pointer rounded">
+                                        <span id="qr-color-hex" class="text-xs font-mono font-medium text-gray-300">#000000</span>
+                                    </div>
+                                </div>
+                                <!-- Cor de Fundo -->
+                                <div class="glass-card rounded-xl p-2.5 flex flex-col gap-1.5 items-center">
+                                    <span class="text-[10px] font-medium text-gray-400">Cor de Fundo</span>
+                                    <div class="flex items-center gap-1.5 w-full">
+                                        <input type="color" id="bg-color" value="#ffffff" class="w-7 h-7 bg-transparent border-0 cursor-pointer rounded">
+                                        <span id="bg-color-hex" class="text-xs font-mono font-medium text-gray-300">#ffffff</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Seleção de Tamanho -->
+                        <div class="flex flex-col gap-2">
+                            <label for="qr-size" class="text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-up-right-and-down-left-from-center text-purple-400"></i> Tamanho do QR Code
+                            </label>
+                            <div class="grid grid-cols-3 gap-1.5 h-[62px] items-center">
+                                <button type="button" onclick="setSize(150, this)" class="size-btn py-2 text-xs font-semibold rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 hover:bg-purple-500/20 transition duration-200">150px</button>
+                                <button type="button" onclick="setSize(250, this)" class="size-btn py-2 text-xs font-semibold rounded-xl bg-purple-500/20 border border-purple-500 text-white transition duration-200">250px</button>
+                                <button type="button" onclick="setSize(350, this)" class="size-btn py-2 text-xs font-semibold rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 hover:bg-purple-500/20 transition duration-200">350px</button>
+                            </div>
+                            <input type="hidden" id="qr-size" value="250">
+                        </div>
+                    </div>
+
+                    <!-- Botão Principal -->
+                    <button 
+                        id="generate-btn" 
+                        onclick="generateQR()"
+                        class="glass-button-primary text-white rounded-xl py-4 font-bold text-sm tracking-wider uppercase flex items-center justify-center gap-2"
+                    >
+                        <i class="fa-solid fa-bolt text-amber-300 animate-pulse"></i> Gerar QR Code
+                    </button>
+                </div>
+            </div>
+
+            <!-- Coluna Direita: Preview -->
+            <div class="md:col-span-5 flex flex-col">
+                <div class="glass-panel rounded-2xl p-6 flex flex-col justify-between items-center gap-6 shadow-2xl h-full min-h-[380px] relative overflow-hidden">
+                    <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-2 self-start">
+                        <i class="fa-solid fa-eye text-blue-400"></i> Preview
+                    </h2>
+
+                    <!-- Sem QR Code -->
+                    <div id="empty-state" class="flex flex-col items-center justify-center text-center gap-4 py-8 px-4 flex-grow">
+                        <div class="w-16 h-16 rounded-full bg-purple-500/10 flex items-center justify-center border border-purple-500/20 animate-pulse">
+                            <i class="fa-solid fa-qrcode text-3xl text-purple-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-medium text-sm">Pronto para gerar</h3>
+                            <p class="text-xs text-gray-500 mt-1 max-w-[200px]">Preencha as informações à esquerda e clique em Gerar.</p>
+                        </div>
+                    </div>
+
+                    <!-- Carregamento -->
+                    <div id="qr-loader" class="hidden flex-col items-center justify-center text-center gap-3 py-8 flex-grow">
+                        <div class="relative w-12 h-12">
+                            <div class="w-12 h-12 rounded-full border-4 border-purple-500/20 border-t-purple-500 animate-spin"></div>
+                        </div>
+                        <p class="text-xs text-gray-400">Gerando QR Code...</p>
+                    </div>
+
+                    <!-- Painel de Preview -->
+                    <div id="qr-display" class="hidden flex-col items-center justify-center gap-5 flex-grow py-4 w-full">
+                        <div class="p-4 bg-white rounded-2xl shadow-inner border border-white/10 flex items-center justify-center" style="box-shadow: 0 10px 30px rgba(0,0,0,0.5)">
+                            <div id="qrcode"></div>
+                        </div>
+                        
+                        <div class="flex flex-col items-center gap-1">
+                            <span class="text-xs font-mono text-gray-400" id="qr-details-label">PNG • 250x250px</span>
+                        </div>
+                    </div>
+
+                    <!-- Botões de Ação -->
+                    <div id="download-actions" class="hidden w-full grid grid-cols-2 gap-3 mt-2">
+                        <button 
+                            onclick="downloadQR()"
+                            class="py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider text-white bg-blue-600/80 hover:bg-blue-600 border border-blue-500/30 flex items-center justify-center gap-2 transition duration-200"
+                        >
+                            <i class="fa-solid fa-download"></i> Baixar PNG
+                        </button>
+                        <button 
+                            onclick="copyToClipboard()"
+                            class="py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider text-[#00D4FF] hover:text-white bg-[#00D4FF]/10 hover:bg-[#00D4FF]/20 border border-[#00D4FF]/20 flex items-center justify-center gap-2 transition duration-200"
+                        >
+                            <i class="fa-solid fa-copy"></i> Copiar
+                        </button>
+                    </div>
+
+                    <!-- Badges de Destaque da Immersive UI -->
+                    <div class="flex justify-around items-center w-full gap-4 pt-4 border-t border-white/5 mt-2 opacity-60">
+                        <div class="text-center">
+                            <div class="text-xl mb-1">🚀</div>
+                            <div class="text-[9px] font-bold uppercase tracking-widest text-gray-300">Alta Velocidade</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xl mb-1">🔒</div>
+                            <div class="text-[9px] font-bold uppercase tracking-widest text-gray-300">100% Seguro</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xl mb-1">🎨</div>
+                            <div class="text-[9px] font-bold uppercase tracking-widest text-gray-300">Customizável</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rodapé -->
+        <footer class="text-center text-xs text-gray-500 mt-4 flex flex-col gap-2">
+            <p>© 2026 Gerador QR Code Pro. Pronto para rodar no GitHub Pages.</p>
+        </footer>
+    </div>
+
+    <!-- Notificações -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script>
+        // Sincronização dos seletores de cores
+        const qrColorInput = document.getElementById('qr-color');
+        const bgColorInput = document.getElementById('bg-color');
+        const qrColorHex = document.getElementById('qr-color-hex');
+        const bgColorHex = document.getElementById('bg-color-hex');
+
+        qrColorInput.addEventListener('input', (e) => {
+            qrColorHex.innerText = e.target.value.toUpperCase();
+            triggerLiveUpdate();
+        });
+
+        bgColorInput.addEventListener('input', (e) => {
+            bgColorHex.innerText = e.target.value.toUpperCase();
+            triggerLiveUpdate();
+        });
+
+        // Altera Tamanho Ativo
+        function setSize(px, btn) {
+            document.getElementById('qr-size').value = px;
+            
+            document.querySelectorAll('.size-btn').forEach(b => {
+                b.classList.remove('bg-purple-500/20', 'border-purple-500', 'text-white');
+                b.classList.add('bg-purple-500/10', 'border-purple-500/30', 'text-purple-300', 'hover:bg-purple-500/20');
+            });
+
+            btn.classList.remove('bg-purple-500/10', 'border-purple-500/30', 'text-purple-300');
+            btn.classList.add('bg-purple-500/20', 'border-purple-500', 'text-white');
+            
+            triggerLiveUpdate();
+        }
+
+        let hasGeneratedQR = false;
+
+        function triggerLiveUpdate() {
+            if (hasGeneratedQR) {
+                drawQR(true);
+            }
+        }
+
+        // Toasts customizados
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = "flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto " +
+                (type === 'error' 
+                    ? 'bg-rose-950/90 border-rose-500/30 text-rose-200' 
+                    : 'bg-emerald-950/90 border-emerald-500/30 text-emerald-200');
+            
+            const icon = type === 'error' 
+                ? '<i class="fa-solid fa-circle-exclamation text-rose-400"></i>' 
+                : '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
+
+            toast.innerHTML = `
+                ${icon}
+                <span class="text-xs font-semibold">${message}</span>
+                <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-white transition ml-4">
+                    <i class="fa-solid fa-xmark text-[10px]"></i>
+                </button>
+            `;
+
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-[-10px]', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Renderizador qrcode.js
+        function drawQR() {
+            const text = document.getElementById('qr-text').value.trim();
+            const size = parseInt(document.getElementById('qr-size').value) || 250;
+            const colorDark = document.getElementById('qr-color').value;
+            const colorLight = document.getElementById('bg-color').value;
+            const qrContainer = document.getElementById('qrcode');
+
+            qrContainer.innerHTML = "";
+
+            try {
+                new QRCode(qrContainer, {
+                    text: text,
+                    width: size,
+                    height: size,
+                    colorDark: colorDark,
+                    colorLight: colorLight,
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                document.getElementById('qr-details-label').innerText = `PNG • ${size}x${size}px`;
+                hasGeneratedQR = true;
+            } catch (err) {
+                console.error(err);
+                showToast("Erro técnico ao renderizar o QR.", "error");
+            }
+        }
+
+        // Ação do Botão
+        function generateQR() {
+            const textInput = document.getElementById('qr-text');
+            const textValue = textInput.value.trim();
+
+            if (!textValue) {
+                showToast("Por favor, digite um texto ou URL para gerar!", "error");
+                textInput.classList.add('border-rose-500/80', 'animate-pulse');
+                setTimeout(() => {
+                    textInput.classList.remove('border-rose-500/80', 'animate-pulse');
+                }, 800);
+                return;
+            }
+
+            const btn = document.getElementById('generate-btn');
+            const originalHTML = btn.innerHTML;
+            
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin text-white"></i> Gerando...';
+            btn.disabled = true;
+
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('qr-display').classList.add('hidden');
+            document.getElementById('download-actions').classList.add('hidden');
+            document.getElementById('qr-loader').classList.remove('hidden');
+
+            setTimeout(() => {
+                drawQR();
+                
+                document.getElementById('qr-loader').classList.add('hidden');
+                
+                const qrDisplay = document.getElementById('qr-display');
+                qrDisplay.classList.remove('hidden');
+                
+                qrDisplay.style.opacity = '0';
+                qrDisplay.style.transform = 'scale(0.95)';
+                qrDisplay.style.transition = 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                
+                setTimeout(() => {
+                    qrDisplay.style.opacity = '1';
+                    qrDisplay.style.transform = 'scale(1)';
+                }, 50);
+
+                document.getElementById('download-actions').classList.remove('hidden');
+
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+
+                showToast("QR Code gerado com sucesso!", "success");
+            }, 700);
+        }
+
+        // Baixar Imagem
+        function downloadQR() {
+            const container = document.getElementById("qrcode");
+            const img = container.querySelector("img");
+            const canvas = container.querySelector("canvas");
+            
+            let dataUrl = "";
+            if (img && img.src && img.src.startsWith("data:image")) {
+                dataUrl = img.src;
+            } else if (canvas) {
+                dataUrl = canvas.toDataURL("image/png");
+            }
+            
+            if (!dataUrl) {
+                showToast("Não foi possível capturar a imagem.", "error");
+                return;
+            }
+            
+            const a = document.createElement("a");
+            const textValue = document.getElementById('qr-text').value.trim();
+            let filename = 'qrcode';
+            try {
+                const parsed = new URL(textValue);
+                filename = parsed.hostname.replace('www.', '') || 'qrcode';
+            } catch (e) {
+                filename = textValue.slice(0, 15).replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'qrcode';
+            }
+            
+            const size = document.getElementById('qr-size').value;
+            
+            a.href = dataUrl;
+            a.download = `${filename}_qr_${size}px.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            showToast("Download concluído!", "success");
+        }
+
+        // Copiar Imagem
+        async function copyToClipboard() {
+            const container = document.getElementById("qrcode");
+            const canvas = container.querySelector("canvas");
+            const img = container.querySelector("img");
+
+            if (!canvas && !img) {
+                showToast("Nenhum QR Code gerado para copiar.", "error");
+                return;
+            }
+
+            try {
+                let dataUrl = img ? img.src : canvas.toDataURL("image/png");
+                const response = await fetch(dataUrl);
+                const blob = await response.blob();
+                
+                await navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                ]);
+                showToast("QR Code copiado para área de transferência!", "success");
+            } catch (err) {
+                console.error(err);
+                showToast("Seu navegador não suporta cópia direta.", "error");
+            }
+        }
+    </script>
+</body>
+</html>
